@@ -6,7 +6,7 @@ contract LotteryContract{
     address public manager;
     address public winner;
     uint minPlayers = 3;
-    uint playersCount;
+    uint public playersCount;
     struct Lottery{
         uint amount;
         uint transactionCount;
@@ -31,7 +31,6 @@ contract LotteryContract{
     }
 
     function getBalance() public view onlyManager returns(uint){
-        require(msg.sender == manager, "only for the manager!");
         return address(this).balance;
     }
 
@@ -41,7 +40,7 @@ contract LotteryContract{
     }
 
     function pickWinner() public onlyManager WinnerNotSet returns(address){
-        require(playersCount >= minPlayers);
+        require(playersCount >= minPlayers, "require min 3 players!");
         address[] memory _players = players;
         uint winnerIndex = random() % playersCount;
         winner = _players[winnerIndex];
@@ -58,13 +57,14 @@ contract LotteryContract{
     }
 
     function resetGame() public onlyManager WinnerIsSet{
+        require(address(this).balance == 0, "should withdraw first!");
         winner = address(0);
         players = new address[](0);
         playersCount = 0;
     }
 
     modifier onlyManager{
-        require(msg.sender == manager);
+        require(msg.sender == manager, "only for the manager!");
         _;
     }
 
